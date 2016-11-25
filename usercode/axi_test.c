@@ -27,7 +27,6 @@ typedef struct{
 TZynqAxiHanddle gHandle ={0};
 static  int datapoint = 0;
 static  int filepoint = 0;
-static  int hardware_key = 0; //硬件开关
 static  int fpga_ret = 0;//存状态返回值
 static  int fpga_ret3=0;
 static volatile int fpga_ret2 = 0;
