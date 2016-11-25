@@ -27,6 +27,7 @@ typedef struct{
 TZynqAxiHanddle gHandle ={0};
 static  int datapoint = 0;
 static  int filepoint = 0;
+static  int hardware_key = 0; //硬件开关
 static  int fpga_ret = 0;//存状态返回值
 static  int fpga_ret3=0;
 static volatile int fpga_ret2 = 0;
@@ -72,8 +73,8 @@ Data ReadAxiReg(int address)
 }
 int WriteAxiReg(int data, int address)
 {
-	int length = 0;
-	int count = 0;
+    int length = 0;
+    int count = 0;
 	int ret = 0;
 	TAxiRwReg nReg = {0};
 	nReg.nRead = 0;
@@ -82,75 +83,77 @@ int WriteAxiReg(int data, int address)
 	ret = ioctl(gHandle.nFd,AXI_CMD_RW_REG,&nReg,sizeof(nReg));
 	if(ret != 0)
 	{
+
 		return 0x0002;
 	}
+
 	return 0x0001;
 }
 static int filestore()/*先在根目录下创建data文件夹，再在里面做文件夹创建和文件添加操作*/
 {
 	signal(SIGCHLD, SIG_DFL);
-	mkdir("/data", S_IRWXU | S_IRWXG | S_IRWXO);
-	system("mount /dev/mmcblk0p3 /data");
-	while(1)
+    mkdir("/data", S_IRWXU | S_IRWXG | S_IRWXO);
+    system("mount /dev/mmcblk0p3 /data");
+    while(1)
 	{
 		int irq_num=0;
 		char dir_name[100] ="/data/file_";
-		char str1[5],str2[5],str3[5],str4[5];
-		char div[3] ="_";
-		int put_int,get_int = 0;
-		int fd = open(device, O_RDWR);
-		Data timed= ReadAxiReg(0x1050);
-		int tmp = timed.tmp;
-		char t1=(tmp>>24)&0xFF;
-		char t2=(tmp>>16)&0xFF;
-		char t3=(tmp>>8)&0xFF;
-		char t4=tmp&0xFF;
-		sprintf(str1,"%x",t1);
-		sprintf(str2,"%x",t2);
-		sprintf(str3,"%x",t3);
-		sprintf(str4,"%x",t4);
-		strcat(dir_name,str1);
-		strcat(dir_name,div);
-		strcat(dir_name,str2);
-		strcat(dir_name,div);
-		strcat(dir_name,str3);
-		strcat(dir_name,div);
-		strcat(dir_name,str4);
-		mkdir(dir_name,S_IRWXU | S_IRWXG | S_IRWXO);
-		char file_name[200] ={'\0'};
-		char file_tmp[200]={'\0'};
-		int file_num[4]={1,1,1,1};
-		while (1)
-		{
-			int rc;
-			pthread_mutex_lock(&mtx);
-			rc=pthread_cond_wait(&cond, &mtx);
+        char str1[5],str2[5],str3[5],str4[5];
+        char div[3] ="_";
+        int put_int,get_int = 0;
+        int fd = open(device, O_RDWR);
+        Data timed= ReadAxiReg(0x1050);
+   		int tmp = timed.tmp;
+        char t1=(tmp>>24)&0xFF;
+        char t2=(tmp>>16)&0xFF;
+        char t3=(tmp>>8)&0xFF;
+        char t4=tmp&0xFF;
+        sprintf(str1,"%x",t1);
+        sprintf(str2,"%x",t2);
+        sprintf(str3,"%x",t3);
+        sprintf(str4,"%x",t4);
+        strcat(dir_name,str1);
+        strcat(dir_name,div);
+        strcat(dir_name,str2);
+        strcat(dir_name,div);
+        strcat(dir_name,str3);
+   		strcat(dir_name,div);
+        strcat(dir_name,str4);
+        mkdir(dir_name,S_IRWXU | S_IRWXG | S_IRWXO);
+   		char file_name[200] ={'\0'};
+        char file_tmp[200]={'\0'};
+        int file_num[4]={1,1,1,1};
+        while (1)
+        {
+            int rc;
+            pthread_mutex_lock(&mtx);
+            rc=pthread_cond_wait(&cond, &mtx);
 			if(rc == 0)
 			{
-				read(fd,&temdata,sizeof(temdata));
-				if( temdata.length )
-				{
-					int i =0;
-					int length = temdata.length;
-					int type = temdata.type;
-					FILE *fp = NULL;
-					char *name= "\0";
-					switch (type)
-					{
-						case 1:
-							name="/HDLC_";
-							break;
-						case 2:
-							name="/ETH_";
-							break;
-						case 3:
-							name="/1553_";
-							break;
-						default:
-							break;
-					}
-					char num[100]={'\0'};
-					sprintf(num,"%d",file_num[type]);
+                read(fd,&temdata,sizeof(temdata));
+                if( temdata.length )
+                {
+                    int i =0;
+                    int length = temdata.length;
+                    int type = temdata.type;
+                    FILE *fp = NULL;
+                    char *name= "\0";
+                    switch (type)
+                    {
+                        case 1:
+                        name="/HDLC_";
+                        break;
+                        case 2:
+                        name="/ETH_";
+                        break;
+                        case 3:
+                        name="/1553_";
+                        break;
+                        default:
+                        break;
+                    }
+                    char num[100]={'\0'};
+                    sprintf(num,"%d",file_num[type]);
                     strcpy(file_name,file_tmp);
                     strcat(file_name,dir_name);
                     strcat(file_name,name);
@@ -336,6 +339,7 @@ static void rs232rd()
 		{
 			int16_t tmp1[]={0xA55A,0x820B,0x5800,0xFDD5,0xA3B3,0xA4B9,0xF7D7};
 			write(rs232_fd,tmp1,sizeof(tmp1));
+
 		}
 		tmp[2]=0x7800;
 		system("df -h|grep mmcblk0p3|tr -d %|awk '{print $5}' > /data/sd");
@@ -484,7 +488,7 @@ static void gpio_irq()
 
 int main(int argc, char *argv[])
 {
-	int count =0;
+	int count =0 ;
 	int fd,data,address;
 	fd = open(device, O_RDWR);
 	gHandle.nFd =fd;
