@@ -16,7 +16,6 @@
 #include <linux/interrupt.h>
 #include <linux/poll.h>
 #include "ioctl.h"
-//#define KEY_PIN
 #define ERROR_LINE	printk("%s-%d\n",__FILE__,__LINE__)
 #define AXIDEV_MAJOR			153	/* assigned */
 #define N_AXI_MINORS			32	/* ... up to 256 */
