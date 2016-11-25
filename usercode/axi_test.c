@@ -143,7 +143,7 @@ static int filestore()/*先在根目录下创建data文件夹，再在里面做�
 						case 2:
 							name="/ETH_";
 							break;
-                        case 3:
+						case 3:
 							name="/1553_";
 							break;
 						default:
