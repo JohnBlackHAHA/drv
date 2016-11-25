@@ -486,7 +486,7 @@ static void gpio_irq()
 
 int main(int argc, char *argv[])
 {
-	int count =0 ;
+	int count =0;
 	int fd,data,address;
 	fd = open(device, O_RDWR);
 	gHandle.nFd =fd;
