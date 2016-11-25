@@ -338,7 +338,6 @@ static void rs232rd()
 		{
 			int16_t tmp1[]={0xA55A,0x820B,0x5800,0xFDD5,0xA3B3,0xA4B9,0xF7D7};
 			write(rs232_fd,tmp1,sizeof(tmp1));
-
 		}
 		tmp[2]=0x7800;
 		system("df -h|grep mmcblk0p3|tr -d %|awk '{print $5}' > /data/sd");
