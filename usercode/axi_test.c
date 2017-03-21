@@ -464,7 +464,7 @@ static void gpio_irq()
 		read(fp2,&ret2,sizeof(char));
         if (ret1!=ret1_pre)
 		{
-                	WriteAxiReg(ret1-48,0x100c);
+            WriteAxiReg(ret1-48,0x100c);
 			if(ret1==48)
 			{
 				fpga_ret3=0;
